@@ -11,7 +11,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager, Permission
 # Role Model
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    description = models.TextField()
+    # description = models.TextField()
       
     def __str__(self):
         return self.name
@@ -19,8 +19,9 @@ class Role(models.Model):
 
 # SubRole Model
 class SubRole(MPTTModel):
-    role = models.ForeignKey(Role, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
+    role = models.ForeignKey(Role, on_delete=models.CASCADE)
+    description = models.TextField()
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children', on_delete=models.SET_NULL)
 
     class MPTTMeta:
@@ -101,3 +102,6 @@ class Admin(models.Model):
 
     def __str__(self):
         return self.user.email        
+
+
+
