@@ -81,6 +81,7 @@ class User(AbstractUser, PermissionsMixin):
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=100, null=False)
+    mobile_no = models.CharField(max_length=15, blank=True, null=True)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
     subrole = models.ForeignKey(SubRole, on_delete=models.SET_NULL, null=True)
 
