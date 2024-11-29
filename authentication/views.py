@@ -11,7 +11,7 @@ class RegisterUserView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             return Response({'detail': 'User created successfully.'})
-        return Response(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
     def post(self, request):
@@ -24,9 +24,10 @@ class LoginView(APIView):
             return Response({
                 'access': access_token,
                 'refresh': refresh_token,
-                'role': user.role.name if user.role else "No Role"
+                'role': user.role.name if user.role else "No Role",
+                'subrole': user.subrole.name if user.subrole else "No Subrole"
             }, status=status.HTTP_200_OK)
-        return Response(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(APIView):
     def post(self, request):
@@ -39,7 +40,7 @@ class LogoutView(APIView):
                 return Response({'detail': 'Logged out successfully.'})
             except Exception as e:
                 return Response({'detail': 'Invalid token.'})
-        return Response(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 class ChangePasswordView(APIView):
     def post(self, request):
@@ -47,7 +48,7 @@ class ChangePasswordView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({'detail': 'Password changed successfully.'})
-        return Response(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 class ForgotPasswordView(APIView):
     def post(self, request):
@@ -55,7 +56,7 @@ class ForgotPasswordView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({'detail': 'Password reset email sent.'})
-        return Response(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 class ResetPasswordView(APIView):
     def post(self, request):
@@ -76,7 +77,7 @@ class ResetPasswordView(APIView):
 
                 return Response({'detail': 'Password reset successful.'})
             return Response({'detail': 'Invalid or expired token.'})
-        return Response(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
 
