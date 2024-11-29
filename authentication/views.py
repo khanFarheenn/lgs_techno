@@ -13,20 +13,53 @@ class RegisterUserView(APIView):
             return Response({'detail': 'User created successfully.'})
         return Response(serializer.errors)
 
+# class LoginView(APIView):
+#     def post(self, request):
+#         serializer = LoginSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.validated_data['user']
+#             refresh = RefreshToken.for_user(user)
+#             access_token = str(refresh.access_token)
+#             refresh_token = str(refresh)
+#             return Response({
+#                 'access': access_token,
+#                 'refresh': refresh_token,
+#                 'role': user.role.name if user.role else "No Role"
+#             }, status=status.HTTP_200_OK)
+#         return Response(serializer.errors)
+
+import logging
+from django.contrib.auth.signals import user_logged_in
+# Create a logger to capture actions
+logger = logging.getLogger(__name__)
+
 class LoginView(APIView):
     def post(self, request):
+        # Deserialize the incoming data with LoginSerializer
         serializer = LoginSerializer(data=request.data)
+        
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            
+            # Manually trigger the user_logged_in signal after successful login
+            logger.info(f"Manually triggering the user_logged_in signal for user {user.email}.")
+            user_logged_in.send(sender=user.__class__, request=request, user=user)
+            
+            # Generate the JWT tokens
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
+            
+            # Return the response with the tokens and user role
             return Response({
                 'access': access_token,
                 'refresh': refresh_token,
                 'role': user.role.name if user.role else "No Role"
             }, status=status.HTTP_200_OK)
+        
+        # If validation fails, return errors
         return Response(serializer.errors)
+
 
 class LogoutView(APIView):
     def post(self, request):

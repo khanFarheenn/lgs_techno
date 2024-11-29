@@ -1,6 +1,14 @@
 from rest_framework import viewsets
 from .models import *
 from .serializer import *
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from django.core.mail import send_mail
+from django.conf import settings
+from rest_framework.permissions import IsAuthenticated
+
+
+
 
 class IdTypeView(viewsets.ModelViewSet):
     queryset = IdType.objects.all()
@@ -106,9 +114,80 @@ class EnablerView(viewsets.ModelViewSet):
     serializer_class = EnablerSerializer
 
 
+
+
+
+
+
 class SponsorView(viewsets.ModelViewSet):
     queryset = Sponsor.objects.all()
-    serializer_class = SponsorSerializer
+    serializer_class = SponsorSerializer 
+    permission_classes = [IsAuthenticated] 
+
+    @action(detail=True, methods=['post'])
+    def approve_learner(self, request, pk=None):
+        if not request.user.is_authenticated:
+            return Response({"error": "Authentication required."}, status=401)
+
+        sponsor = self.get_object()
+
+        
+        user = request.user
+        
+        status_name = request.data.get('approval_status')
+        try:
+            status_instance = ProposerStatus.objects.get(name=status_name)
+        except ProposerStatus.DoesNotExist:
+            return Response(
+                {"error": f"ProposerStatus with name `{status_name}` does not exist."},
+                status=400
+            )
+
+        
+        if user.role and user.role.name != 'LEARNER':
+           
+            learner_role, created = Role.objects.get_or_create(name="LEARNER")
+            user.role = learner_role
+            user.save()
+
+        
+        
+        send_mail(
+            subject="Learner Approved",
+            message=f"Dear {user.first_name},\n\nThe learner with email {user.email} has been approved and their role has been updated to 'LEARNER'.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[sponsor.requestor.user.email],
+            fail_silently=False,
+        )
+
+        
+        send_mail(
+            subject="Your Role Has Been Updated to LEARNER",
+            message=f"Dear {user.first_name},\n\nCongratulations!Your role has been updated to 'LEARNER'.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
+        
+        sponsor_serializer = self.get_serializer(sponsor)
+        
+        
+        return Response({
+            "sponsor": sponsor_serializer.data,
+            
+            "user": {
+                "id": user.id,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "role":  user.role.name if user.role else None,
+                "approval_status": status_instance.name 
+            }
+        })
+            
+        
+    
 
 
 class TrainerView(viewsets.ModelViewSet):

@@ -1,7 +1,4 @@
 from django.db import models
-
-
-from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
@@ -11,7 +8,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager, Permission
 # Role Model
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    # description = models.TextField()
+    
       
     def __str__(self):
         return self.name

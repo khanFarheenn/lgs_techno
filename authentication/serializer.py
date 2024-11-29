@@ -144,10 +144,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
             fail_silently=False,
-            # html_message=(
-            #         f'Use this link to reset your password: <a href="{reset_link}">Reset Password</a><br>'
-            #         f'Your reset token is: <strong>{reset_token}</strong>' 
-            #     ),
+            
              html_message=f'Use this link to reset your password: <a href="{reset_link}">Reset Password</a>'
         )
         print(f"Password reset link: {reset_link}")

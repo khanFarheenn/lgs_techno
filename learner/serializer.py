@@ -79,15 +79,14 @@ class LearnerSerializer(serializers.ModelSerializer):
     rejection_reason = serializers.CharField(max_length=500, allow_null=True, required=False)
 
     def create(self, validated_data):
-        # Assign a default or arbitrary username (non-unique)
-        # username = validated_data.get('username') or "user_" + str(validated_data.get('email'))  # Default username logic
+        
 
         user_data = {
             'first_name': validated_data.pop('first_name'),
             'last_name': validated_data.pop('last_name'),
             'password': validated_data.pop('password'),
             'email': validated_data.pop('email'),
-            # 'username': username  # Set a default or arbitrary username, not checked for uniqueness
+            
         }
 
         # Ensure email is unique
@@ -95,19 +94,19 @@ class LearnerSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A user with this email already exists.")
 
         try:
-            # Check if the role exists, and create it if necessary
+            
             role, created = Role.objects.get_or_create(name='LEARNER')
         except MultipleObjectsReturned:
             raise serializers.ValidationError("Something went wrong: multiple roles found.")
         except Exception as e:
-            # Catching any other exception that might arise during role creation/fetching
+            
             raise serializers.ValidationError(f"Error fetching or creating role: {str(e)}")
 
-        # Ensure role is created successfully
+        
         if role is None:
             raise serializers.ValidationError("Role could not be created or fetched.")
 
-        # Create the user with the given email and non-unique username
+        
         try:
             user = User.objects.create_user(**user_data)  
             user.role.add(role)  
@@ -115,7 +114,7 @@ class LearnerSerializer(serializers.ModelSerializer):
         except IntegrityError:
             raise serializers.ValidationError("User creation failed due to an integrity error.")
 
-        # Create learner instance with the validated data (including mobile_no, qualification, etc.)
+        
         learner = Learner.objects.create(user=user, **validated_data)
         return learner
 
@@ -176,10 +175,6 @@ class LearnerSerializer(serializers.ModelSerializer):
 
 # ***************************EnablerSerializer*******************************
 
-# class EnablerSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Enabler
-#         fields = '__all__'
 
 
 
@@ -194,26 +189,25 @@ class EnablerSerializer(serializers.ModelSerializer):
     description = serializers.CharField(max_length=1000)
 
     def create(self, validated_data):
-        # Assign a default or arbitrary username (non-unique)
-        # username = validated_data.get('username') or "user_" + str(validated_data.get('email'))  # Default username logic
+        
 
         user_data = {
             'first_name': validated_data.pop('first_name'),
             'last_name': validated_data.pop('last_name'),
             'password': validated_data.pop('password'),
             'email': validated_data.pop('email'),
-            # 'username': username  # Set a default or arbitrary username, not checked for uniqueness
+            
         }
 
-        # Ensure email is unique
+        
         if User.objects.filter(email=user_data['email']).exists():
             raise serializers.ValidationError("A user with this email already exists.")
 
-        # Create the user with the given email and non-unique username
-        user = User.objects.create_user(**user_data)  # Create user with email and non-unique username
-        user.save()  # Save the user
+        
+        user = User.objects.create_user(**user_data)  
+        user.save()  
 
-        # Create enabler instance
+        
         enabler = Enabler.objects.create(user=user, **validated_data)
         return enabler
 
@@ -263,10 +257,7 @@ class EnablerSerializer(serializers.ModelSerializer):
 
 # ****************************************SponsorSerializer*************************************
 
-# class SponsorSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Sponsor
-#         fields = '__all__'
+
 
 
 
@@ -310,10 +301,7 @@ class SponsorSerializer(serializers.ModelSerializer):
 
 # ********************************TrainerSerializer***********************************************
 
-# class TrainerSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Trainer
-#         fields = '__all__'
+
 
 
 class TrainerSerializer(serializers.ModelSerializer):
