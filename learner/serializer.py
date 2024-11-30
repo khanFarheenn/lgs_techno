@@ -185,6 +185,7 @@ class LearnerSerializer(serializers.ModelSerializer):
 
 
 class EnablerSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=100, write_only=True)
     first_name = serializers.CharField(max_length=100, write_only=True)
     last_name = serializers.CharField(max_length=100, write_only=True)
     password = serializers.CharField(max_length=100, write_only=True)
@@ -194,6 +195,9 @@ class EnablerSerializer(serializers.ModelSerializer):
     description = serializers.CharField(max_length=1000)
 
     def create(self, validated_data):
+        username = validated_data.get('username')
+        if not username:
+            raise serializers.ValidationError("Username is required.")
         # Assign a default or arbitrary username (non-unique)
         # username = validated_data.get('username') or "user_" + str(validated_data.get('email'))  # Default username logic
 
@@ -202,7 +206,7 @@ class EnablerSerializer(serializers.ModelSerializer):
             'last_name': validated_data.pop('last_name'),
             'password': validated_data.pop('password'),
             'email': validated_data.pop('email'),
-            # 'username': username  # Set a default or arbitrary username, not checked for uniqueness
+            'username': username  # Set a default or arbitrary username, not checked for uniqueness
         }
 
         # Ensure email is unique
